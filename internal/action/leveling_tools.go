@@ -51,60 +51,165 @@ var uiSkillPagePositionLegacy = [3]data.Position{
 var uiSkillRowPositionLegacy = [6]int{110, 195, 275, 355, 440, 520}
 var uiSkillColumnPositionLegacy = [3]int{690, 770, 855}
 
+func AssignEnergyStats() error { // THIS IS WORKING!!!!! BUT NEEDS A FOR LOOP, THEN COPYING FOR EACH STAT
+	ctx := context.Get()
+	ctx.SetLastAction("********************AssignEnergyStats")
+
+	// using the ShouldResetSkills() code from below, this should check the TargetStatEnergyVar() int
+	// that's defined in the leveling script and brought in via the context / character.go file
+	ch, isLevelingChar := ctx.Char.(context.LevelingCharacter)
+	if isLevelingChar && !ch.ShouldResetSkills() {
+
+		currentenergy, _ := ctx.Data.PlayerUnit.FindStat(stat.Energy, 0)
+		targetenergy := ch.AssignEnergyStats()
+
+		if unusedstats, _ := ctx.Data.PlayerUnit.FindStat(stat.StatPoints, 0); unusedstats.Value > 0 {
+			// check to see if it's being triggerd:
+			ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.SkillSpeedBar)
+			utils.Sleep(2000)
+			// confirmed this function is being triggerd
+
+			if currentenergy.Value < targetenergy {
+
+				// check to see if it's being triggerd:
+				ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.CharacterScreen)
+				utils.Sleep(2000)
+				// confirmed this function is being triggerd
+
+				if !ctx.Data.OpenMenus.Character {
+					ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.CharacterScreen)
+					return nil
+				}
+
+				// check if legacy or standard button co-ordinates should be used
+				var statBtnPosition data.Position
+				if ctx.Data.LegacyGraphics {
+					statBtnPosition = uiStatButtonPositionLegacy[stat.Energy]
+				} else {
+					statBtnPosition = uiStatButtonPosition[stat.Energy]
+				}
+
+				// TO DO add a for loop in here to repeat the step for every unused stat point, if greater than the target minus current stat points
+				utils.Sleep(2000)
+				ctx.HID.Click(game.LeftButton, statBtnPosition.X, statBtnPosition.Y)
+				utils.Sleep(2000)
+				return nil
+
+			}
+		} // working - confirmed
+
+	}
+
+	return step.CloseAllMenus()
+
+}
+
 func EnsureStatPoints() error {
 	// TODO finish this
 	return nil
-	//return NewStepChain(func(d game.Data) []step.Step {
-	//	char, isLevelingChar := b.ch.(LevelingCharacter)
-	//	_, unusedStatPoints := d.PlayerUnit.FindStat(stat.StatPoints, 0)
-	//	if !isLevelingChar || !unusedStatPoints {
-	//		if d.OpenMenus.Character {
-	//			return []step.Step{
-	//				step.SyncStep(func(_ game.Data) error {
-	//					b.HID.PressKey(win.VK_ESCAPE)
-	//					return nil
-	//				}),
-	//			}
-	//		}
-	//
-	//		return nil
-	//	}
-	//
-	//	for st, targetPoints := range char.StatPoints(d) {
-	//		currentPoints, found := d.PlayerUnit.FindStat(st, 0)
-	//		if !found || currentPoints.Value >= targetPoints {
-	//			continue
-	//		}
-	//
-	//		if !d.OpenMenus.Character {
-	//			return []step.Step{
-	//				step.SyncStep(func(_ game.Data) error {
-	//					b.HID.PressKeyBinding(d.KeyBindings.CharacterScreen)
-	//					return nil
-	//				}),
-	//			}
-	//		}
-	//
-	//		var statBtnPosition data.Position
-	//		if d.LegacyGraphics {
-	//			statBtnPosition = uiStatButtonPositionLegacy[st]
-	//		} else {
-	//			statBtnPosition = uiStatButtonPosition[st]
-	//		}
-	//
-	//		return []step.Step{
-	//			step.SyncStep(func(_ game.Data) error {
-	//				utils.Sleep(100)
-	//				b.HID.Click(game.LeftButton, statBtnPosition.X, statBtnPosition.Y)
-	//				utils.Sleep(500)
-	//				return nil
-	//			}),
-	//		}
-	//	}
-	//
-	//	return nil
-	//}, RepeatUntilNoSteps())
+	// Wamlad - check for is leveling char before even triggering this function
+	// ctx := context.Get()
+
+	// // TESTING WORKING
+
+	// if lvl, _ := ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value == 10 {
+	// 	ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.QuestLog)
+	// 	utils.Sleep(2000)
+	// } // working
+
+	// if unusedstats, _ := ctx.Data.PlayerUnit.FindStat(stat.StatPoints, 0); unusedstats.Value == 5 {
+	// 	ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.ShowBelt)
+	// 	utils.Sleep(2000)
+	// } // working
+
+	// // if vit, _ := ctx.Data.PlayerUnit.FindStat(stat.Vitality, 0); vit.Value == 40 {
+	// // 	ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.Inventory)
+	// // 	utils.Sleep(2000)
+	// // } // working, but CHECK is this stats or base stats? check with gear modifiers. Does it matter? Late game should incl. impact of gear.
+
+	// if ene, _ := ctx.Data.PlayerUnit.FindStat(stat.Energy, 0); ene.Value == 35 {
+	// 	ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.Inventory)
+	// 	utils.Sleep(2000)
+	// }
+
+	// return step.CloseAllMenus()
+
+	// TESTING WORKING END
+
+	// TESTING
+	// isLevelingChar := ctx.Char.(context.LevelingCharacter)
+	// isLevelingCharacter := game.Data(LevelingCharacter)
+
+	// targetPointsA := game.Data.PlayerUnit.FindStat(stat.Vitality, 0)
+	// targetPointsB := game.Data.Stat.Vitality(game.Data)
+	// targetPoints := game.Data.Vitality(game.Data)
+	// if vit, _ := ctx.Data.PlayerUnit.FindStat(stat.Vitality, 0); vit.Value < targetPoints {
+	// 	ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.Inventory)
+	// }
+	// TESTING END
+
+	// STATUS AND NEXT STEPS
+	// StatPoints that are set in the character leveling files internal\character\sorceress_leveling_fire.go
+	// Are then defined in one combined data field d2go/pkg/data/stat/stats.go
+	// Could we instead set each individually?
+	// StrengthTarget, VitalityTarget etc.
+	// Then call them in one by one to compare if > current stats?
+
+	// return nil
+
 }
+
+//return NewStepChain(func(d game.Data) []step.Step {
+//	char, isLevelingChar := b.ch.(LevelingCharacter)
+//	_, unusedStatPoints := d.PlayerUnit.FindStat(stat.StatPoints, 0)
+//	if !isLevelingChar || !unusedStatPoints {
+//		if d.OpenMenus.Character {
+//			return []step.Step{
+//				step.SyncStep(func(_ game.Data) error {
+//					b.HID.PressKey(win.VK_ESCAPE)
+//					return nil
+//				}),
+//			}
+//		}
+//
+//		return nil
+//	}
+//
+//	for st, targetPoints := range char.StatPoints(d) {
+//		currentPoints, found := d.PlayerUnit.FindStat(st, 0)
+//		if !found || currentPoints.Value >= targetPoints {
+//			continue
+//		}
+//
+//		if !d.OpenMenus.Character {
+//			return []step.Step{
+//				step.SyncStep(func(_ game.Data) error {
+//					b.HID.PressKeyBinding(d.KeyBindings.CharacterScreen)
+//					return nil
+//				}),
+//			}
+//		}
+//
+//		var statBtnPosition data.Position
+//		if d.LegacyGraphics {
+//			statBtnPosition = uiStatButtonPositionLegacy[st]
+//		} else {
+//			statBtnPosition = uiStatButtonPosition[st]
+//		}
+//
+//		return []step.Step{
+//			step.SyncStep(func(_ game.Data) error {
+//				utils.Sleep(100)
+//				b.HID.Click(game.LeftButton, statBtnPosition.X, statBtnPosition.Y)
+//				utils.Sleep(500)
+//				return nil
+//			}),
+//		}
+//	}
+//
+//	return nil
+//}, RepeatUntilNoSteps())
+// }
 
 func EnsureSkillPoints() error {
 	// TODO finish this

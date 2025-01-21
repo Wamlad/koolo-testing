@@ -23,3 +23,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 )
+
+// added to use a local verion of d2go
+// replace github.com/hectorgimenez/d2go => C:\d2go\d2go-8bce23b039735ac09ab77433dde3fb3ce70bb444
+replace github.com/hectorgimenez/d2go => C:\Users\Cam\OneDrive\Documents\GitHub\d2go

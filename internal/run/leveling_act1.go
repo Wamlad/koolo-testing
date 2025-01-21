@@ -6,7 +6,6 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/object"
-	"github.com/hectorgimenez/d2go/pkg/data/quest"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/koolo/internal/action"
 	"github.com/hectorgimenez/koolo/internal/game"
@@ -33,26 +32,40 @@ func (a Leveling) act1() error {
 		a.coldPlains()
 	}
 
-	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value == 6 || !a.ctx.Data.Quests[quest.Act1DenOfEvil].Completed() {
-		a.denOfEvil()
-	}
+	// if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value == 6 || !a.ctx.Data.Quests[quest.Act1DenOfEvil].Completed() {
+	// 	a.denOfEvil()
+	// }
 
 	// clear Stony Field until level 9
-	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 9 {
+	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 7 {
 		a.stonyField()
 	}
 
-	if !a.isCainInTown() && !a.ctx.Data.Quests[quest.Act1TheSearchForCain].Completed() {
-		a.deckardCain()
+	// This maybe won't work as Cain isn't being saved. So will trigger over and over.
+	// Added a level cap of 10. So it will farm the tree boss and encounter errors until level 10 and then move on.
+	// if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 10 {
+	// 	if !a.isCainInTown() && !a.ctx.Data.Quests[quest.Act1TheSearchForCain].Completed() {
+	// 		a.deckardCain()
+	// 	}
+	// }
+
+	// clear DarkWood until level 10
+	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 9 {
+		a.darkWood()
+	}
+
+	// clear BlackMarsh until level 12
+	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 12 {
+		a.blackMarsh()
 	}
 
 	// do Tristram Runs until level 14
-	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 14 {
-		a.tristram()
-	}
+	// if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 15 {
+	// 	a.tristram()
+	// }
 
 	// do Countess Runs until level 17
-	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 17 {
+	if lvl, _ := a.ctx.Data.PlayerUnit.FindStat(stat.Level, 0); lvl.Value < 18 {
 		a.countess()
 	}
 
@@ -77,24 +90,25 @@ func (a Leveling) coldPlains() error {
 	return action.ClearCurrentLevel(false, data.MonsterAnyFilter())
 }
 
-func (a Leveling) denOfEvil() error {
-	err := action.MoveToArea(area.BloodMoor)
-	if err != nil {
-		return err
-	}
+// Removed as not completing quest successfully
+// func (a Leveling) denOfEvil() error {
+// 	err := action.MoveToArea(area.BloodMoor)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = action.MoveToArea(area.DenOfEvil)
-	if err != nil {
-		return err
-	}
+// 	err = action.MoveToArea(area.DenOfEvil)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	action.ClearCurrentLevel(false, data.MonsterAnyFilter())
-	action.ReturnTown()
-	action.InteractNPC(npc.Akara)
-	a.ctx.HID.PressKey(win.VK_ESCAPE)
+// 	action.ClearCurrentLevel(false, data.MonsterAnyFilter())
+// 	action.ReturnTown()
+// 	action.InteractNPC(npc.Akara)
+// 	a.ctx.HID.PressKey(win.VK_ESCAPE)
 
-	return nil
-}
+// 	return nil
+// }
 
 func (a Leveling) stonyField() error {
 	err := action.WayPoint(area.StonyField)
@@ -103,6 +117,27 @@ func (a Leveling) stonyField() error {
 	}
 
 	return action.ClearCurrentLevel(false, data.MonsterAnyFilter())
+}
+
+// added progressive area farming
+func (a Leveling) darkWood() error {
+	err := action.WayPoint(area.DarkWood)
+	if err != nil {
+		return err
+	}
+
+	return action.ClearCurrentLevel(false, data.MonsterAnyFilter())
+}
+
+// added progressive area farming
+func (a Leveling) blackMarsh() error {
+	err := action.WayPoint(area.BlackMarsh)
+	if err != nil {
+		return err
+	}
+
+	return action.ClearCurrentLevel(false, data.MonsterAnyFilter())
+	// return action.ClearCurrentLevel(false, data.MonsterEliteFilter())
 }
 
 func (a Leveling) isCainInTown() bool {
@@ -156,6 +191,8 @@ func (a Leveling) deckardCain() error {
 	action.InteractNPC(npc.Akara)
 	a.ctx.HID.PressKey(win.VK_ESCAPE)
 
+	// Tristram removed as cain quest is not working
+
 	//Reuse Tristram Run actions
 	err = Tristram{}.Run()
 	if err != nil {
@@ -164,6 +201,8 @@ func (a Leveling) deckardCain() error {
 
 	return nil
 }
+
+// Tristram to be removed from leveling scripts as cain quest is not working. Left in here though, it jsut won't be triggered in leveling scripts.
 
 func (a Leveling) tristram() error {
 	return Tristram{}.Run()

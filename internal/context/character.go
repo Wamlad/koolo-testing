@@ -30,6 +30,7 @@ type Character interface {
 
 type LevelingCharacter interface {
 	Character
+	AssignEnergyStats() int
 	// StatPoints Stats will be assigned in the order they are returned by this function.
 	StatPoints() map[stat.ID]int
 	SkillPoints() []skill.ID

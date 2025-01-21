@@ -46,8 +46,13 @@ func PreRun(firstRun bool) error {
 	// Leveling related checks
 	if ctx.CharacterCfg.Game.Leveling.EnsurePointsAllocation {
 		ResetStats()
-		EnsureStatPoints()
+		EnsureStatPoints() // YES THIS IS BEING TRIGGERED. Test this function
 		EnsureSkillPoints()
+		// AssignEnergy()
+		// Use the below line to check if this check is being triggered:
+		// ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.SwapWeapons)
+		// YES THIS IS BEING TRIGGERED
+		AssignEnergyStats()
 	}
 
 	if ctx.CharacterCfg.Game.Leveling.EnsureKeyBinding {
