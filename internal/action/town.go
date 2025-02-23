@@ -1,9 +1,12 @@
 package action
 
 import (
+	"fmt"
+
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/koolo/internal/action/step"
 	"github.com/hectorgimenez/koolo/internal/context"
+	"github.com/hectorgimenez/koolo/internal/utils"
 )
 
 func PreRun(firstRun bool) error {
@@ -17,21 +20,21 @@ func PreRun(firstRun bool) error {
 	ClearMessages()
 
 	if firstRun {
-		Stash(firstRun)
+		Stash(false)
 	}
 
 	UpdateQuestLog()
 
 	// Store items that need to be left unidentified
 	if HaveItemsToStashUnidentified() {
-		Stash(firstRun)
+		Stash(false)
 	}
 
 	// Identify - either via Cain or Tome
-	IdentifyAll(firstRun)
+	IdentifyAll(false)
 
 	// Stash before vendor
-	Stash(firstRun)
+	Stash(false)
 
 	// Refill pots, sell, buy etc
 	VendorRefill(false, true)
@@ -70,7 +73,15 @@ func PreRun(firstRun bool) error {
 func InRunReturnTownRoutine() error {
 	ctx := context.Get()
 
-	ReturnTown()
+	if err := ReturnTown(); err != nil {
+		return fmt.Errorf("failed to return to town: %w", err)
+	}
+
+	// Validate we're actually in town before proceeding
+	if !ctx.Data.PlayerUnit.Area.IsTown() {
+		return fmt.Errorf("failed to verify town location after portal")
+	}
+
 	step.SetSkill(skill.Vigor)
 	RecoverCorpse()
 	ManageBelt()
@@ -101,6 +112,12 @@ func InRunReturnTownRoutine() error {
 	ReviveMerc()
 	HireMerc()
 	Repair()
-
+	
+	if (ctx.CharacterCfg.Companion.Leader) {
+		UsePortalInTown()
+		utils.Sleep(500)
+		return OpenTPIfLeader()
+	}
+	
 	return UsePortalInTown()
 }

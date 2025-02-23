@@ -357,6 +357,8 @@ func qualityClass(quality string) string {
 		return "rare-quality"
 	case "Unique":
 		return "unique-quality"
+	case "Crafted":
+		return "crafted-quality"
 	default:
 		return "unknown-quality"
 	}
@@ -800,7 +802,7 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Nova Sorceress specific options
-		if cfg.Character.Class == "nova" {
+		if cfg.Character.Class == "nova" || cfg.Character.Class == "lightsorc" {
 			bossStaticThreshold, err := strconv.Atoi(r.Form.Get("novaBossStaticThreshold"))
 			if err == nil {
 				minThreshold := 65 // Default
@@ -892,6 +894,7 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 		cfg.Game.ArachnidLair.FocusOnElitePacks = r.Form.Has("gameArachnidLairFocusOnElitePacks")
 		cfg.Game.Mephisto.KillCouncilMembers = r.Form.Has("gameMephistoKillCouncilMembers")
 		cfg.Game.Mephisto.OpenChests = r.Form.Has("gameMephistoOpenChests")
+		cfg.Game.Mephisto.ExitToA4 = r.Form.Has("gameMephistoExitToA4")
 		cfg.Game.Tristram.ClearPortal = r.Form.Has("gameTristramClearPortal")
 		cfg.Game.Tristram.FocusOnElitePacks = r.Form.Has("gameTristramFocusOnElitePacks")
 		cfg.Game.Nihlathak.ClearArea = r.Form.Has("gameNihlathakClearArea")
@@ -941,6 +944,7 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 
 		cfg.Game.TerrorZone.FocusOnElitePacks = r.Form.Has("gameTerrorZoneFocusOnElitePacks")
 		cfg.Game.TerrorZone.SkipOtherRuns = r.Form.Has("gameTerrorZoneSkipOtherRuns")
+		cfg.Game.TerrorZone.OpenChests = r.Form.Has("gameTerrorZoneOpenChests")
 
 		cfg.Game.TerrorZone.SkipOnImmunities = []stat.Resist{}
 		for _, i := range r.Form["gameTerrorZoneSkipOnImmunities[]"] {
